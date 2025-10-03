@@ -123,8 +123,8 @@ const ChatRoom = ({ roomCode, onLeaveRoom }: ChatRoomProps) => {
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" />
       <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-accent/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: "2s" }} />
 
-      {/* Header */}
-      <div className="bg-card/80 backdrop-blur-xl border-b border-border/50 p-4 relative z-10">
+      {/* Header (fixed) */}
+      <div className="bg-card/80 backdrop-blur-xl border-b border-border/50 p-4 fixed inset-x-0 top-0 z-50">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
@@ -150,63 +150,65 @@ const ChatRoom = ({ roomCode, onLeaveRoom }: ChatRoomProps) => {
         </div>
       </div>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 relative z-10">
-        <div className="max-w-4xl mx-auto space-y-3">
-          {messages.length === 0 ? (
-            <div className="text-center text-muted-foreground py-12 animate-fade-in">
-              <MessageSquare className="w-16 h-16 mx-auto mb-4 opacity-50" />
-              <p>No messages yet. Start the conversation!</p>
-            </div>
-          ) : (
-            messages.map((msg) => (
-              <div
-                key={msg.id}
-                className={`flex ${msg.userId === userId ? "justify-end" : "justify-start"} animate-slide-in`}
-              >
-                <Card
-                  className={`max-w-[70%] p-3 ${
-                    msg.userId === userId
-                      ? "bg-gradient-to-br from-primary to-accent text-primary-foreground border-0 shadow-lg"
-                      : "bg-card/80 backdrop-blur-sm border-border/50"
-                  }`}
-                >
-                  {msg.fileUrl && (
-                    <div className="mb-2">
-                      <FilePreview
-                        url={msg.fileUrl}
-                        fileName={msg.fileName || 'file'}
-                        fileType={msg.fileType || 'application/octet-stream'}
-                        isOwn={msg.userId === userId}
-                      />
-                    </div>
-                  )}
-                  {msg.text && (
-                    <p className="text-sm break-words">
-                      {tokenizeLinks(msg.text).map((t, i) =>
-                        t.type === 'url' ? (
-                          <a key={i} href={t.value} target="_blank" rel="noopener noreferrer" className="text-blue-700 dark:text-blue-300 underline">
-                            {t.value}
-                          </a>
-                        ) : (
-                          <span key={i}>{t.value}</span>
-                        )
-                      )}
-                    </p>
-                  )}
-                  <p className={`text-xs mt-1 ${msg.userId === userId ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
-                    {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </p>
-                </Card>
+      {/* Messages - only this area should scroll (add top/bottom padding so fixed header/footer don't cover content) */}
+      <div className="flex-1 relative z-10 flex overflow-hidden">
+        <div className="flex-1 overflow-y-auto p-4 w-full pt-16 pb-16">
+          <div className="max-w-4xl mx-auto space-y-3">
+            {messages.length === 0 ? (
+              <div className="text-center text-muted-foreground py-12 animate-fade-in">
+                <MessageSquare className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                <p>No messages yet. Start the conversation!</p>
               </div>
-            ))
-          )}
-          <div ref={messagesEndRef} />
+            ) : (
+              messages.map((msg) => (
+                <div
+                  key={msg.id}
+                  className={`flex ${msg.userId === userId ? "justify-end" : "justify-start"} animate-slide-in`}
+                >
+                  <Card
+                    className={`max-w-[70%] p-3 ${
+                      msg.userId === userId
+                        ? "bg-gradient-to-br from-primary to-accent text-primary-foreground border-0 shadow-lg"
+                        : "bg-card/80 backdrop-blur-sm border-border/50"
+                    }`}
+                  >
+                    {msg.fileUrl && (
+                      <div className="mb-2">
+                        <FilePreview
+                          url={msg.fileUrl}
+                          fileName={msg.fileName || 'file'}
+                          fileType={msg.fileType || 'application/octet-stream'}
+                          isOwn={msg.userId === userId}
+                        />
+                      </div>
+                    )}
+                    {msg.text && (
+                      <p className="text-sm break-words">
+                        {tokenizeLinks(msg.text).map((t, i) =>
+                          t.type === 'url' ? (
+                            <a key={i} href={t.value} target="_blank" rel="noopener noreferrer" className="text-blue-700 dark:text-blue-300 underline">
+                              {t.value}
+                            </a>
+                          ) : (
+                            <span key={i}>{t.value}</span>
+                          )
+                        )}
+                      </p>
+                    )}
+                    <p className={`text-xs mt-1 ${msg.userId === userId ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
+                      {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </p>
+                  </Card>
+                </div>
+              ))
+            )}
+            <div ref={messagesEndRef} />
+          </div>
         </div>
       </div>
 
-      {/* Input */}
-      <div className="bg-card/80 backdrop-blur-xl border-t border-border/50 p-4 relative z-10">
+      {/* Input / Footer (fixed) */}
+      <div className="bg-card/80 backdrop-blur-xl border-t border-border/50 p-4 fixed inset-x-0 bottom-0 z-50">
         <div className="max-w-4xl mx-auto flex gap-2 items-end">
           <FileUpload onFileUploaded={handleFileUploaded} externalPreview={pendingFile} />
           <div className="flex-1 min-w-0">
